@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:alpine
+    environment:
+      POSTGRES_USER: iotuser
+      POSTGRES_PASSWORD: iotpass
+      POSTGRES_DB: iotdb
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - iot-net
+
+  redis:
+    image: redis:alpine
+    volumes:
+      - redis-data:/data
+    networks:
+      - iot-net
+
+  mosquitto:
+    image: eclipse-mosquitto
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - ./mosquitto/config/mosquitto.conf:/mosquitto/config/mosquitto.conf
+    networks:
+      - iot-net
+
+  backend:
+    build: ./backend
+    environment:
+      PGUSER: iotuser
+      PGPASSWORD: iotpass
+      PGHOST: postgres
+      PGDATABASE: iotdb
+      REDIS_HOST: redis
+      MQTT_HOST: mosquitto
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+      - redis
+      - mosquitto
+    networks:
+      - iot-net
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - iot-net
+
+volumes:
+  postgres-data:
+  redis-data:
+
+networks:
+  iot-net:
