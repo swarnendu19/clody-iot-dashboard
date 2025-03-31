@@ -32,24 +32,25 @@ initDB().catch(console.error);
 
 // Handle MQTT messages
 mqttClient.on('message', async (topic, message) => {
+  console.log("Starting ")
   const data = JSON.parse(message.toString());
   console.log('Received MQTT data:', data);
 
   // Store in TimescaleDB
-  await timescalePool.query(
-    'INSERT INTO sensor_data (time, device_id, temperature, humidity) VALUES (NOW(), $1, $2, $3)',
-    [1, data.temperature, data.humidity] // Assuming device_id = 1
-  );
+  // await timescalePool.query(
+  //   'INSERT INTO sensor_data (time, device_id, temperature, humidity) VALUES (NOW(), $1, $2, $3)',
+  //   [1, data.temperature, data.humidity] // Assuming device_id = 1
+  // );
 
   // Publish to Redis
-  await redis.publish('sensor_data', JSON.stringify(data));
+  // await redis.publish('sensor_data', JSON.stringify(data));
 
   // Broadcast to WebSocket clients
-  wss.clients.forEach((client) => {
-    if (client.readyState === client.OPEN) {
-      client.send(JSON.stringify(data));
-    }
-  });
+  // wss.clients.forEach((client) => {
+  //   if (client.readyState === client.OPEN) {
+  //     client.send(JSON.stringify(data));
+  //   }
+  // });
 });
 
 app.listen(3000, () => console.log('Server running on port 3000'));

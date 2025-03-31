@@ -3,7 +3,12 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node src/index.js",
+    "worker": "node src/worker.js",
+    "mqtt": "node src/mqtt/subscriber.js",
+    "websocket": "node src/websocket/server.js",
+    "dev": "concurrently \"npm:start\" \"npm:worker\" \"npm:mqtt\" \"npm:websocket\""
   },
   "keywords": [],
   "author": "",
