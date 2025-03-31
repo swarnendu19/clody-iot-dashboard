@@ -1,37 +1,45 @@
-import express from 'express';
-import dotenv from 'dotenv';
-import Redis from 'ioredis';
-import { addSensorData } from './models/sensorData';
-import { startWebSocketServer } from './utils/websocket';
+import mqtt, { MqttClient } from 'mqtt';
 
-dotenv.config();
+// Configuration
+const mqttServer: string = 'mqtt://test.mosquitto.org'; // Replace with your MQTT broker IP
+const mqttTopic: string = 'sensor/data/my_test_123'; // Match the Arduino topic
 
-const app = express();
-app.use(express.json());
+// Define the expected data structure
+interface SensorData {
+    temperature: number;
+    humidity: number;
+}
 
-const redis = new Redis({
-  host: process.env.REDIS_HOST,
-  port: parseInt(process.env.REDIS_PORT || '6379'),
+// Connect to MQTT broker
+const client: MqttClient = mqtt.connect(mqttServer);
+
+// Handle connection
+client.on('connect', () => {
+    console.log('Connected to MQTT broker');
+    client.subscribe(mqttTopic, (err: Error | null) => {
+        if (!err) {
+            console.log(`Subscribed to topic: ${mqttTopic}`);
+        } else {
+            console.error('Subscription error:', err.message);
+        }
+    });
 });
 
-app.post('/api/data', async (req, res) => {
-  const { deviceId, temperature, humidity } = req.body;
+// Handle incoming messages
+client.on('message', (topic: string, message: Buffer) => {
+    const payload: string = message.toString();
+    console.log(`Received data on ${topic}: ${payload}`);
 
-  if (!deviceId || typeof temperature !== 'number' || typeof humidity !== 'number') {
-    return res.status(400).json({ error: 'Invalid data' });
-  }
-
-  try {
-    const data = await addSensorData(deviceId, temperature, humidity);
-    await redis.publish('sensor_data', JSON.stringify({ deviceId, temperature, humidity }));
-    res.json({ success: true, data });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Server error' });
-  }
+    try {
+        const data: SensorData = JSON.parse(payload);
+        console.log(`Temperature: ${data.temperature}°C, Humidity: ${data.humidity}%`);
+    } catch (e: unknown) {
+        const error = e instanceof Error ? e : new Error('Unknown error');
+        console.error('Error parsing JSON:', error.message);
+    }
 });
 
-app.listen(3000, () => {
-  console.log('Server running on port 3000');
-  startWebSocketServer(); // Start WebSocket server
+// Handle errors
+client.on('error', (err: Error) => {
+    console.error('MQTT error:', err.message);
 });
