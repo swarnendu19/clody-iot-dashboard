@@ -1,7 +1,0 @@
-CREATE TABLE IF NOT EXISTS sensor_metadata (
-  id SERIAL PRIMARY KEY,
-  temp FLOAT NOT NULL,
-  humidity FLOAT NOT NULL,
-  timestamp TIMESTAMPTZ NOT NULL,
-  device_id VARCHAR(50) DEFAULT 'NodeMCU'
-);
