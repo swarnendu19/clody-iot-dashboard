@@ -1,19 +1,17 @@
 import mqtt, { MqttClient } from 'mqtt';
 
-// Configuration
-const mqttServer: string = 'mqtt://test.mosquitto.org'; // Replace with your MQTT broker IP
-const mqttTopic: string = 'sensor/data/my_test_123'; // Match the Arduino topic
 
-// Define the expected data structure
+const mqttServer: string = 'mqtt://test.mosquitto.org';
+const mqttTopic: string = 'sensor/data/my_test_123';
+
+
 interface SensorData {
     temperature: number;
     humidity: number;
 }
 
-// Connect to MQTT broker
 const client: MqttClient = mqtt.connect(mqttServer);
 
-// Handle connection
 client.on('connect', () => {
     console.log('Connected to MQTT broker');
     client.subscribe(mqttTopic, (err: Error | null) => {
@@ -25,7 +23,6 @@ client.on('connect', () => {
     });
 });
 
-// Handle incoming messages
 client.on('message', (topic: string, message: Buffer) => {
     const payload: string = message.toString();
     console.log(`Received data on ${topic}: ${payload}`);
@@ -39,7 +36,12 @@ client.on('message', (topic: string, message: Buffer) => {
     }
 });
 
-// Handle errors
+
 client.on('error', (err: Error) => {
     console.error('MQTT error:', err.message);
 });
+
+
+
+
+

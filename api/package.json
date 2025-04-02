@@ -19,6 +19,7 @@
         "ioredis": "^5.6.0",
         "mqtt": "^5.10.4",
         "pg": "^8.14.1",
+        "winston": "^3.17.0",
         "ws": "^8.18.1"
     },
     "devDependencies": {
