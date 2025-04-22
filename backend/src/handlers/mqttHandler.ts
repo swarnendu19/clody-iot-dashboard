@@ -1,17 +1,23 @@
 import redis from '../../config/redis';
 import { emit } from './socketHandler';
 import logger from '../utils/logger';
-import { SensorData } from '../types';
+// import { SensorData } from '../types';
 import { REDIS_KEY } from '../constants';
-import mqtt from 'mqtt/*';
+import mqtt from 'mqtt';
 
 
-const MQTT_TOPIC = "dip/sensor"
+interface SensorData {
+  moisture: number;
+  soil_temperature: number;
+  timestamp?: number;
+}
+
 export function setupMqtt(client: mqtt.MqttClient): void {
   client.on('connect', () => {
     logger.info('Connected to MQTT broker');
-    client.subscribe(MQTT_TOPIC, (err: any) => {
+    client.subscribe('dip/sensor', (err) => {
       if (err) logger.error('MQTT subscription error:', err);
+      else logger.info('Subscribed to dip/sensor');
     });
   });
 
