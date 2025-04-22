@@ -1,16 +1,22 @@
 import mqtt, { MqttClient } from 'mqtt';
 import 'dotenv/config';
-import logger from '../src/utils/logger'; // Assuming you have a logger utility
+import logger from '../src/utils/logger';
 
-// Configuration with defaults
-const mqttHost: string = process.env.MQTT_HOST || 'mqtt://broker.hivemq.com';
+// Configuration
+const mqttHost: string ='mqtt://broker.hivemq.com';
+// const mqttHost: string = process.env.MQTT_HOST || 'mqtt://192.168.0.100'; // Uncomment for local Mosquitto
+
+// Validate MQTT host
+if (!mqttHost.startsWith('mqtt://') && !mqttHost.startsWith('mqtts://') && !mqttHost.startsWith('ws://')) {
+  logger.error(`Invalid MQTT_HOST: ${mqttHost}. Must include protocol (e.g., mqtt://, mqtts://, ws://)`);
+  process.exit(1);
+}
+
 const mqttOptions: mqtt.IClientOptions = {
-  clientId: `backend_${Math.random().toString(16).substr(2, 8)}`, // Unique client ID
-  reconnectPeriod: 1000, // Reconnect after 1 second if disconnected
-  connectTimeout: 30 * 1000, // 30 seconds timeout
-  // Uncomment and configure if your broker requires credentials
-  // username: process.env.MQTT_USER,
-  // password: process.env.MQTT_PASS,
+  clientId: `backend_${Math.random().toString(16).substr(2, 8)}`,
+  reconnectPeriod: 2000, // Reconnect every 2 seconds
+  connectTimeout: 60 * 1000, // Increased to 60 seconds
+  keepalive: 60, // Keep-alive 60 seconds
 };
 
 // Connect to MQTT broker
@@ -22,21 +28,25 @@ client.on('connect', () => {
 });
 
 client.on('reconnect', () => {
-  logger.info('MQTT client reconnecting...');
+  logger.info(`MQTT client reconnecting to ${mqttHost}...`);
 });
 
 client.on('offline', () => {
-  logger.warn('MQTT client offline');
+  logger.warn(`MQTT client offline for ${mqttHost}`);
 });
 
 client.on('error', (error: Error) => {
-  logger.error('MQTT client error:', error.message);
+  logger.error(`MQTT client error for ${mqttHost}: ${error.message}`, error.stack);
+});
+
+client.on('close', () => {
+  logger.info(`MQTT client disconnected from ${mqttHost}`);
 });
 
 // Graceful shutdown
 process.on('SIGINT', () => {
   logger.info('SIGINT received, disconnecting MQTT client...');
-  client.end(() => {
+  client.end(true, () => {
     logger.info('MQTT client disconnected');
     process.exit(0);
   });
@@ -44,7 +54,7 @@ process.on('SIGINT', () => {
 
 process.on('SIGTERM', () => {
   logger.info('SIGTERM received, disconnecting MQTT client...');
-  client.end(() => {
+  client.end(true, () => {
     logger.info('MQTT client disconnected');
     process.exit(0);
   });
