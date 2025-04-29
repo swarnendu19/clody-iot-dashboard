@@ -34,8 +34,7 @@ function generateSensorData(): SensorData {
 client.on('connect', () => {
   logger.info('Publisher: Connected to MQTT broker');
 
-  // Publish data at regular intervals
-  setInterval(() => {
+   setInterval(() => {
     const payload: SensorData = generateSensorData();
     const payloadString: string = JSON.stringify(payload);
 
