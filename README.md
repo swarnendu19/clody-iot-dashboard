@@ -1,6 +1,7 @@
 # Clody: Smart Sensor Data Pipeline
 
-![System Architecture](./architecture-diagram.png)
+![image](https://github.com/user-attachments/assets/972ed88c-6267-4c77-a98e-d63a3b374478)
+
 
 ## Overview
 
