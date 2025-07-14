@@ -46,8 +46,8 @@ async function processBatch(): Promise<void> {
 }
 
 function calculateAverages(data: SensorData[]): AveragedData {
-  const tempSum = data.reduce((sum, d) => sum + d.temp, 0);
-  const humidSum = data.reduce((sum, d) => sum + d.humid, 0);
+  const tempSum = data.reduce((sum, d) => sum + d.soil_temperature, 0);
+  const humidSum = data.reduce((sum, d) => sum + d.moisture, 0);
   const timestamps = data.map((d) => d.timestamp);
   const startTime = new Date(Math.min(...timestamps));
   const endTime = new Date(Math.max(...timestamps));

@@ -7,9 +7,10 @@ import mqtt from 'mqtt';
 
 
 interface SensorData {
-  moisture: number;
-  soil_temperature: number;
-  timestamp?: number;
+  moisture: number;           // Moisture percentage (0–100)
+  soil_temperature: number;   // Temperature in °C (e.g., 15–35)
+  ph: number;                 // pH value (e.g., 4.5–8.0)
+  timestamp: number;          // Unix timestamp
 }
 
 export function setupMqtt(client: mqtt.MqttClient): void {

@@ -1,10 +1,11 @@
-import mqtt, { MqttClient } from 'mqtt';
+import mqtt from 'mqtt';
+import type { MqttClient } from 'mqtt';
 import 'dotenv/config';
 import logger from './utils/logger';
 import { SensorData } from './types';
 
 // Configuration
-const mqttHost: string = process.env.MQTT_HOST || 'mqtt://localhost:1883';
+const mqttHost: string = process.env.MQTT_HOST || 'mqtt://broker.hivemq.com';
 const mqttTopic: string = process.env.MQTT_TOPIC || 'dip/sensor';
 const mqttUser: string | undefined = process.env.MQTT_USER;
 const mqttPass: string | undefined = process.env.MQTT_PASS;
@@ -24,10 +25,12 @@ const client: MqttClient = mqtt.connect(mqttHost, mqttOptions);
 
 // Generate random sensor data
 function generateSensorData(): SensorData {
-  const temperature: number = parseFloat((Math.random() * (35 - 15) + 15).toFixed(2)); // 15-35°C
-  const humidity: number = parseFloat((Math.random() * (80 - 30) + 30).toFixed(2)); // 30-80%
+  const soil_temperature: number = parseFloat((Math.random() * (35 - 15) + 15).toFixed(2)); // 15–35°C
+  const moisture: number = parseFloat((Math.random() * (100 - 20) + 20).toFixed(2)); // 20–100%
+  const ph: number = parseFloat((Math.random() * (8.0 - 4.5) + 4.5).toFixed(2)); // 4.5–8.0 pH range
   const timestamp: number = Date.now();
-  return { temperature, humidity, timestamp };
+
+  return { moisture, soil_temperature, ph, timestamp };
 }
 
 // Handle connection
