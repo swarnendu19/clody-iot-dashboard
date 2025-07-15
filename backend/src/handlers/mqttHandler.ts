@@ -1,17 +1,11 @@
 import redis from '../../config/redis';
 import { emit } from './socketHandler';
 import logger from '../utils/logger';
-// import { SensorData } from '../types';
+import { SensorData } from '../types';
 import { REDIS_KEY } from '../constants';
 import mqtt from 'mqtt';
 
 
-interface SensorData {
-  moisture: number;           // Moisture percentage (0–100)
-  soil_temperature: number;   // Temperature in °C (e.g., 15–35)
-  ph: number;                 // pH value (e.g., 4.5–8.0)
-  timestamp: number;          // Unix timestamp
-}
 
 export function setupMqtt(client: mqtt.MqttClient): void {
   client.on('connect', () => {
