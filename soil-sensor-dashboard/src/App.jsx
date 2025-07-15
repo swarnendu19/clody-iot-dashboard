@@ -54,6 +54,8 @@ const App = () => {
     moisture: 0,
     soil_temperature: 0,
     ph: 0,
+    salinity: 0,
+    conductivity: 0,
   });
   const [history, setHistory] = useState([]);
   const [moistureData, setMoistureData] = useState({
@@ -92,6 +94,30 @@ const App = () => {
       },
     ],
   });
+  const [salinityData, setSalinityData] = useState({
+    labels: [],
+    datasets: [
+      {
+        data: [],
+        borderColor: "rgba(239, 68, 68, 0.8)",
+        backgroundColor: "rgba(239, 68, 68, 0.1)",
+        fill: true,
+        borderWidth: 2,
+      },
+    ],
+  });
+  const [conductivityData, setConductivityData] = useState({
+    labels: [],
+    datasets: [
+      {
+        data: [],
+        borderColor: "rgba(34, 197, 94, 0.8)",
+        backgroundColor: "rgba(34, 197, 94, 0.1)",
+        fill: true,
+        borderWidth: 2,
+      },
+    ],
+  });
   const [combinedData, setCombinedData] = useState({
     labels: [],
     datasets: [
@@ -122,25 +148,49 @@ const App = () => {
         borderWidth: 2,
         yAxisID: "y2",
       },
+      {
+        label: "Salinity (dS/m)",
+        data: [],
+        borderColor: "rgba(239, 68, 68, 0.8)",
+        backgroundColor: "rgba(239, 68, 68, 0.1)",
+        fill: true,
+        borderWidth: 2,
+        yAxisID: "y3",
+      },
+      {
+        label: "Conductivity (µS/cm)",
+        data: [],
+        borderColor: "rgba(34, 197, 94, 0.8)",
+        backgroundColor: "rgba(34, 197, 94, 0.1)",
+        fill: true,
+        borderWidth: 2,
+        yAxisID: "y4",
+      },
     ],
   });
   const [currentValues, setCurrentValues] = useState({
     moisture: "0%",
     temperature: "0°C",
     ph: "0.0",
+    salinity: "0.0 dS/m",
+    conductivity: "0 µS/cm",
   });
 
   useEffect(() => {
     const handleSensorUpdate = (newData) => {
       // Update current data
-      setData({
-        moisture: newData.moisture ?? 0,
-        soil_temperature: newData.soil_temperature ?? 0,
-        ph: newData.ph ?? 0,
-      });
+      setData((prevData) => ({
+        moisture: newData.moisture ?? prevData.moisture,
+        soil_temperature: newData.soil_temperature ?? prevData.soil_temperature,
+        ph: newData.ph ?? prevData.ph,
+        salinity: newData.salinity ?? prevData.salinity,
+        conductivity: newData.conductivity ?? prevData.conductivity,
+      }));
 
       // Update history
       setHistory((prevHistory) => {
+        const lastEntry =
+          prevHistory.length > 0 ? prevHistory[prevHistory.length - 1] : data;
         const timestamp = newData.timestamp
           ? new Date(newData.timestamp * 1000)
           : new Date();
@@ -151,9 +201,12 @@ const App = () => {
           timestamp.getMinutes();
         const newEntry = {
           time: timeLabel,
-          moisture: newData.moisture ?? 0,
-          soil_temperature: newData.soil_temperature ?? 0,
-          ph: newData.ph ?? 0,
+          moisture: newData.moisture ?? lastEntry.moisture,
+          soil_temperature:
+            newData.soil_temperature ?? lastEntry.soil_temperature,
+          ph: newData.ph ?? lastEntry.ph,
+          salinity: newData.salinity ?? lastEntry.salinity,
+          conductivity: newData.conductivity ?? lastEntry.conductivity,
         };
         const nextHistory = [...prevHistory, newEntry];
         return nextHistory.length > MAX_COMBINED_POINTS
@@ -166,7 +219,7 @@ const App = () => {
     return () => {
       socket.off("sensorUpdate", handleSensorUpdate);
     };
-  }, []);
+  }, [data, history]);
 
   useEffect(() => {
     // Update chart data based on history
@@ -174,6 +227,8 @@ const App = () => {
     const moistureValues = history.map((entry) => entry.moisture);
     const tempValues = history.map((entry) => entry.soil_temperature);
     const phValues = history.map((entry) => entry.ph);
+    const salinityValues = history.map((entry) => entry.salinity);
+    const conductivityValues = history.map((entry) => entry.conductivity);
 
     // Update individual charts (limited to MAX_DATA_POINTS)
     setMoistureData({
@@ -197,6 +252,24 @@ const App = () => {
         { ...phData.datasets[0], data: phValues.slice(-MAX_DATA_POINTS) },
       ],
     });
+    setSalinityData({
+      labels: labels.slice(-MAX_DATA_POINTS),
+      datasets: [
+        {
+          ...salinityData.datasets[0],
+          data: salinityValues.slice(-MAX_DATA_POINTS),
+        },
+      ],
+    });
+    setConductivityData({
+      labels: labels.slice(-MAX_DATA_POINTS),
+      datasets: [
+        {
+          ...conductivityData.datasets[0],
+          data: conductivityValues.slice(-MAX_DATA_POINTS),
+        },
+      ],
+    });
 
     // Update combined chart
     setCombinedData({
@@ -205,6 +278,8 @@ const App = () => {
         { ...combinedData.datasets[0], data: moistureValues },
         { ...combinedData.datasets[1], data: tempValues },
         { ...combinedData.datasets[2], data: phValues },
+        { ...combinedData.datasets[3], data: salinityValues },
+        { ...combinedData.datasets[4], data: conductivityValues },
       ],
     });
 
@@ -215,6 +290,8 @@ const App = () => {
         moisture: Math.round(latest.moisture) + "%",
         temperature: latest.soil_temperature.toFixed(1) + "°C",
         ph: latest.ph.toFixed(1),
+        salinity: latest.salinity.toFixed(2) + " dS/m",
+        conductivity: Math.round(latest.conductivity) + " µS/cm",
       });
     }
   }, [history]);
@@ -279,6 +356,36 @@ const App = () => {
         },
         offset: true,
       },
+      y3: {
+        type: "linear",
+        display: true,
+        position: "right",
+        min: 0.5,
+        max: 5.0,
+        grid: { drawOnChartArea: false },
+        ticks: { color: "rgba(239, 68, 68, 0.6)" },
+        title: {
+          display: true,
+          text: "Salinity (dS/m)",
+          color: "rgba(239, 68, 68, 0.6)",
+        },
+        offset: true,
+      },
+      y4: {
+        type: "linear",
+        display: true,
+        position: "right",
+        min: 200,
+        max: 2000,
+        grid: { drawOnChartArea: false },
+        ticks: { color: "rgba(34, 197, 94, 0.6)" },
+        title: {
+          display: true,
+          text: "EC (µS/cm)",
+          color: "rgba(34, 197, 94, 0.6)",
+        },
+        offset: true,
+      },
     },
   };
 
@@ -286,7 +393,7 @@ const App = () => {
     <div className="min-h-screen overflow-x-hidden">
       <Header />
       <main className="container mx-auto px-4 pb-12">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-6 mb-8">
           <SensorCard
             title="Soil Moisture"
             subtitle="Current Level"
@@ -326,6 +433,34 @@ const App = () => {
               scales: {
                 ...chartOptions.scales,
                 y: { ...chartOptions.scales.y, min: 4.5, max: 8.0 },
+              },
+            }}
+          />
+          <SensorCard
+            title="Salinity"
+            subtitle="Current Level"
+            value={currentValues.salinity}
+            chartId="salinityChart"
+            chartData={salinityData}
+            chartOptions={{
+              ...chartOptions,
+              scales: {
+                ...chartOptions.scales,
+                y: { ...chartOptions.scales.y, min: 0.5, max: 5.0 },
+              },
+            }}
+          />
+          <SensorCard
+            title="Conductivity"
+            subtitle="Current Level"
+            value={currentValues.conductivity}
+            chartId="conductivityChart"
+            chartData={conductivityData}
+            chartOptions={{
+              ...chartOptions,
+              scales: {
+                ...chartOptions.scales,
+                y: { ...chartOptions.scales.y, min: 200, max: 2000 },
               },
             }}
           />
