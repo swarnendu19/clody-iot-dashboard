@@ -6,6 +6,7 @@
         "worker": "ts-node-dev --respawn --transpile-only src/worker.ts",
         "test:send": "ts-node test/sendData.ts",
         "test:client": "ts-node src/test.ts",
+        "prebuild": "rm -rf dist",
         "build": "tsc",
         "start:publisher": "node dist/publisher.js",
         "start:subscriber": "node dist/subscriber.js"

@@ -28,9 +28,11 @@ function generateSensorData(): SensorData {
   const soil_temperature: number = parseFloat((Math.random() * (35 - 15) + 15).toFixed(2)); // 15–35°C
   const moisture: number = parseFloat((Math.random() * (100 - 20) + 20).toFixed(2)); // 20–100%
   const ph: number = parseFloat((Math.random() * (8.0 - 4.5) + 4.5).toFixed(2)); // 4.5–8.0 pH range
+  const salinity: number = parseFloat((Math.random() * (5.0 - 0.5) + 0.5).toFixed(2)); // 0.5–5.0 dS/m
+  const conductivity: number = parseFloat((Math.random() * (2000 - 200) + 200).toFixed(2)); // 200–2000 µS/cm
   const timestamp: number = Date.now();
 
-  return { moisture, soil_temperature, ph, timestamp };
+  return { moisture, soil_temperature, ph, salinity, conductivity, timestamp };
 }
 
 // Handle connection
