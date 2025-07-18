@@ -172,7 +172,7 @@ const App = () => {
     moisture: "0%",
     temperature: "0°C",
     ph: "0.0",
-    salinity: "0.0 dS/m",
+    salinity: "0.0 mg/L",
     conductivity: "0 µS/cm",
   });
 

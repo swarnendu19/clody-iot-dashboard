@@ -19,7 +19,7 @@ const Header = () => {
         <div className="flex flex-col md:flex-row justify-between items-center">
           <div>
             <h1 className="text-3xl md:text-4xl font-bold neon-text mb-2">
-              Real-Time Soil Sensor Dashboard
+              Real-Time Soil Monitoring Dashboard
             </h1>
             <p className="text-cyan-200 opacity-80">
               Monitoring soil conditions in real-time
